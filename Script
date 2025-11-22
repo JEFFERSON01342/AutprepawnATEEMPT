@@ -1,32 +1,68 @@
 // ==UserScript==
-// @name         TrickSplit Respawn Key (Universal)
+// @name         TrickSplit Respawn Key (React Compatible)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Respawn automático al presionar K en TrickSplit.io
+// @version      1.3
+// @description  Respawn al presionar K incluyendo botones PLAY y CONTINUE (React elements)
 // @match        https://tricksplit.io/*
 // @grant        none
 // ==/UserScript==
 
 (function () {
-    console.log("[RespawnKey] Activado (tecla K)");
+    console.log("[RespawnKey] Activado (tecla K - React compatible)");
 
     document.addEventListener("keydown", function (e) {
 
-        if (e.key.toLowerCase() === "k") {
-            console.log("[RespawnKey] Buscando botón de respawn...");
+        if (e.key.toLowerCase() !== "k") return;
 
-            // Encuentra cualquier botón visible
-            const buttons = Array.from(document.querySelectorAll("button"));
+        console.log("[RespawnKey] Buscando elementos interactivos...");
 
-            for (const btn of buttons) {
-                if (btn && btn.offsetParent !== null) { // visible
-                    btn.click();
-                    console.log("[RespawnKey] Respawn realizado con:", btn);
-                    return;
-                }
+        
+        const selectors = [
+            "button",
+            "div[role='button']",
+            "div[class*='play']",
+            "div[class*='continue']",
+            "div[class*='respawn']",
+            "div[class*='start']",
+            "div:contains('PLAY')",
+            "div:contains('CONTINUE')"
+        ];
+
+        let clicked = false;
+
+    
+        const all = document.querySelectorAll("*");
+
+        all.forEach(el => {
+            const text = (el.innerText || "").trim().toUpperCase();
+
+    
+            if (el.offsetParent === null) return;
+
+        
+            if (text === "PLAY" || text === "CONTINUE" || text === "RESPAWN") {
+                el.click();
+                clicked = true;
+                console.log("[RespawnKey] Respawn (por texto):", el);
             }
 
-            console.log("[RespawnKey] No se encontró botón visible :(");
+    
+            if (/play|continue|respawn/i.test(el.className)) {
+                el.click();
+                clicked = true;
+                console.log("[RespawnKey] Respawn (por clase):", el);
+            }
+
+    
+            if (el.getAttribute("role") === "button") {
+                el.click();
+                clicked = true;
+                console.log("[RespawnKey] Respawn (por role='button'):", el);
+            }
+        });
+
+        if (!clicked) {
+            console.log("[RespawnKey] No se encontró PLAY / CONTINUE visible.");
         }
     });
 })();
